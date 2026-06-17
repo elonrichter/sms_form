@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Skip husky hook installation in CI.
+env:
+  HUSKY: 0
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
+
+      - name: Assert no secret token name leaks into the client bundle
+        run: |
+          if grep -rl "AGGREGATOR_API_TOKEN" .next/static 2>/dev/null; then
+            echo "::error::Secret token reference found in client bundle"
+            exit 1
+          fi
+          echo "OK: no token reference in .next/static"

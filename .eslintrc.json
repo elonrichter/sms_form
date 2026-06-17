@@ -1,0 +1,12 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "coverage/",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "test/",
+    "vitest.config.ts"
+  ]
+}

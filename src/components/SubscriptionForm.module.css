@@ -64,7 +64,7 @@
   align-items: flex-start;
 }
 .phoneRow > :first-child {
-  flex: 0 0 40%;
+  flex: 0 0 36%;
   min-width: 0;
 }
 .phoneRow > :last-child {
@@ -216,6 +216,9 @@ select.input {
   justify-content: center;
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
+  cursor: default;
+}
+.overlay.dismissable {
   cursor: pointer;
 }
 .overlay::before {

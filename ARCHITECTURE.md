@@ -88,9 +88,9 @@ Route Handler (app/api/subscribe/route.ts, server)
 Aggregator (external) — derives brand_id from token, captures IP + occurred_at
   ▲  { success, status, duplicate? }
   │  normalize -> { success, message?, status?, duplicate? }   (no raw codes)
-Browser renders an animated result overlay (blur fade-in, hold ~3s, fade-out,
-then reset to an empty form) for success / duplicate / error; in-flight disables
-submit + shows a spinner.
+Browser renders an animated result overlay (blur fade-in). Error holds ~3s then
+fades out and restores the filled form for retry; success/duplicate stay as a
+terminal confirmation. In-flight disables submit + shows a spinner.
 ```
 
 ### Key invariants (do not break)
@@ -162,6 +162,10 @@ typecheck + lint + tests + build + token-leak check on every push/PR.
 
 ## 11. Change log
 
+- **2026-06-17** — Country dropdown shows a flag emoji per option (selected flag
+  visible; 🇺🇸 on the US default) and uses a narrower column. Result overlay
+  retuned: **error** auto-fades out after ~3s and **restores the entered data**
+  for retry; **success/duplicate** are terminal (stay shown). Tests updated (81).
 - **2026-06-17** — Result UX: success/duplicate/error now render as an animated
   **overlay** that blur-fades in over the (inert) form, holds ~3s, fades out, then
   resets the form to empty. Replaces the inline error panel + the prior

@@ -112,36 +112,30 @@ export default function SubscriptionForm({
     timers.current = [];
   }, []);
 
-  const resetForm = useCallback(() => {
-    clearTimers();
-    setValues({
-      firstName: "",
-      lastName: "",
-      country: initialCountry,
-      phone: "",
-      consentTerms: false,
-      consentMarketing: false,
-    });
-    setTouched({});
-    setServerError(null);
-    setCaptchaToken("");
-    setSubmitState("idle");
-  }, [clearTimers, initialCountry]);
-
-  // Fade the overlay out, then swap back to a fresh, empty form.
-  const beginExit = useCallback(() => {
+  // Dismiss the ERROR overlay: fade out, then return to the form with the
+  // entered data preserved (so the user can retry without retyping).
+  const dismissError = useCallback(() => {
     clearTimers();
     setOverlayPhase("out");
-    timers.current.push(setTimeout(resetForm, 360));
-  }, [clearTimers, resetForm]);
+    timers.current.push(
+      setTimeout(() => {
+        setServerError(null);
+        setSubmitState("idle");
+      }, 360),
+    );
+  }, [clearTimers]);
 
-  // Result lifecycle: appear (blur fade-in), hold ~3s, fade-out, reset.
+  // Result lifecycle: every result blur-fades in. Error auto-fades out after
+  // ~3s and restores the filled form; success/duplicate stay as a terminal
+  // confirmation.
   useEffect(() => {
     if (!isResult) return;
     setOverlayPhase("in");
-    timers.current.push(setTimeout(beginExit, 2600));
+    if (submitState === "error") {
+      timers.current.push(setTimeout(dismissError, 2600));
+    }
     return clearTimers;
-  }, [isResult, beginExit, clearTimers]);
+  }, [isResult, submitState, dismissError, clearTimers]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -284,7 +278,7 @@ export default function SubscriptionForm({
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code} disabled={!c.enabled}>
-                {c.name} ({c.dialCode}){c.enabled ? "" : " — coming soon"}
+                {c.flag} {c.name} ({c.dialCode}){c.enabled ? "" : " — soon"}
               </option>
             ))}
           </select>
@@ -382,7 +376,7 @@ export default function SubscriptionForm({
           tone={submitState === "error" ? "error" : "success"}
           title={overlayTitle}
           body={overlayBody}
-          onDismiss={beginExit}
+          onDismiss={submitState === "error" ? dismissError : undefined}
         />
       ) : null}
     </div>
@@ -513,11 +507,11 @@ function ResultOverlay({
   tone: "success" | "error";
   title: string;
   body: string;
-  onDismiss: () => void;
+  onDismiss?: () => void;
 }) {
   return (
     <div
-      className={`${styles.overlay} ${phase === "out" ? styles.overlayOut : styles.overlayIn}`}
+      className={`${styles.overlay} ${phase === "out" ? styles.overlayOut : styles.overlayIn} ${onDismiss ? styles.dismissable : ""}`}
       role={tone === "error" ? "alert" : "status"}
       aria-live={tone === "error" ? "assertive" : "polite"}
       onClick={onDismiss}

@@ -32,4 +32,10 @@ describe("countries", () => {
   it("lists US first (default-friendly order)", () => {
     expect(COUNTRIES[0].code).toBe("US");
   });
+
+  it("carries a flag emoji for each country", () => {
+    expect(getCountry("US")?.flag).toBe("🇺🇸");
+    expect(getCountry("CA")?.flag).toBe("🇨🇦");
+    expect(COUNTRIES.every((c) => c.flag.length > 0)).toBe(true);
+  });
 });

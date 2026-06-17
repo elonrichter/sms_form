@@ -95,9 +95,60 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
     expect(await screen.findByText(/something went wrong/i)).toBeTruthy();
   });
 
-  it("auto-resets to an empty form after the result overlay times out", async () => {
-    // fireEvent (synchronous) + explicit act flushes avoid the fragile
-    // userEvent <-> fake-timers interplay while still driving the real flow.
+  // Shared helper: fill the form to a submittable state, then submit.
+  async function fillAndSubmit() {
+    fireEvent.change(screen.getByLabelText("First name"), {
+      target: { value: "Jane" },
+    });
+    fireEvent.change(screen.getByLabelText("Last name"), {
+      target: { value: "Doe" },
+    });
+    fireEvent.change(screen.getByLabelText("Phone number"), {
+      target: { value: "4158675309" },
+    });
+    const boxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
+    fireEvent.click(boxes[0]);
+    fireEvent.click(boxes[1]);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /sign me up/i }));
+    });
+    await act(async () => {}); // drain the fetch promise chain -> result state
+  }
+
+  it("error overlay fades out and restores the entered data", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ success: false, message: "x" }), {
+            status: 422,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
+      );
+      render(<SubscriptionForm {...props} />);
+      await fillAndSubmit();
+      expect(screen.getByText(/something went wrong/i)).toBeTruthy();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3200);
+      });
+
+      // Overlay gone; entered data preserved so the user can retry.
+      expect(screen.queryByText(/something went wrong/i)).toBeNull();
+      expect(
+        (screen.getByLabelText("First name") as HTMLInputElement).value,
+      ).toBe("Jane");
+      expect(
+        (screen.getByLabelText("Phone number") as HTMLInputElement).value,
+      ).toBe("4158675309");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("success overlay stays (does not auto-dismiss)", async () => {
     vi.useFakeTimers();
     try {
       vi.stubGlobal(
@@ -110,37 +161,15 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
         ),
       );
       render(<SubscriptionForm {...props} />);
-      fireEvent.change(screen.getByLabelText("First name"), {
-        target: { value: "Jane" },
-      });
-      fireEvent.change(screen.getByLabelText("Last name"), {
-        target: { value: "Doe" },
-      });
-      fireEvent.change(screen.getByLabelText("Phone number"), {
-        target: { value: "4158675309" },
-      });
-      const boxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
-      fireEvent.click(boxes[0]);
-      fireEvent.click(boxes[1]);
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole("button", { name: /sign me up/i }));
-      });
-      await act(async () => {}); // drain the fetch promise chain -> success state
+      await fillAndSubmit();
       expect(screen.getByText(/you're in/i)).toBeTruthy();
 
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(3200);
+        await vi.advanceTimersByTimeAsync(5000);
       });
 
-      expect(screen.queryByText(/you're in/i)).toBeNull();
-      expect(
-        (screen.getByLabelText("First name") as HTMLInputElement).value,
-      ).toBe("");
-      expect(
-        (screen.getByRole("button", { name: /sign me up/i }) as HTMLButtonElement)
-          .disabled,
-      ).toBe(true);
+      // Terminal: success remains after well past the error-dismiss window.
+      expect(screen.getByText(/you're in/i)).toBeTruthy();
     } finally {
       vi.useRealTimers();
     }

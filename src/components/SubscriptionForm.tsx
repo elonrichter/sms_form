@@ -26,6 +26,8 @@ export interface SubscriptionFormProps {
 }
 
 const GENERIC_ERROR = brand.errorBody;
+// How long the error overlay is held before it fades out and restores the form.
+const ERROR_HOLD_MS = 4200;
 
 export default function SubscriptionForm({
   brandName,
@@ -132,7 +134,7 @@ export default function SubscriptionForm({
     if (!isResult) return;
     setOverlayPhase("in");
     if (submitState === "error") {
-      timers.current.push(setTimeout(dismissError, 2600));
+      timers.current.push(setTimeout(dismissError, ERROR_HOLD_MS));
     }
     return clearTimers;
   }, [isResult, submitState, dismissError, clearTimers]);
@@ -512,6 +514,7 @@ function ResultOverlay({
   return (
     <div
       className={`${styles.overlay} ${phase === "out" ? styles.overlayOut : styles.overlayIn} ${onDismiss ? styles.dismissable : ""}`}
+      data-tone={tone}
       role={tone === "error" ? "alert" : "status"}
       aria-live={tone === "error" ? "assertive" : "polite"}
       onClick={onDismiss}

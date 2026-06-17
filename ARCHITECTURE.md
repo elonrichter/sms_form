@@ -162,6 +162,10 @@ typecheck + lint + tests + build + token-leak check on every push/PR.
 
 ## 11. Change log
 
+- **2026-06-17** — Distinct result transitions: **success** uses a slow (~600ms)
+  near-opaque crossfade (form dissolves out as the check/text dissolve in, then
+  terminal); **error** blurs the form harder, holds ~4.2s, then un-blurs back to
+  the form with data preserved.
 - **2026-06-17** — Country dropdown shows a flag emoji per option (selected flag
   visible; 🇺🇸 on the US default) and uses a narrower column. Result overlay
   retuned: **error** auto-fades out after ~3s and **restores the entered data**

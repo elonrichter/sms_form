@@ -230,6 +230,26 @@ select.input {
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
   backdrop-filter: blur(14px) saturate(1.05);
 }
+
+/* Success: a near-opaque veil that slowly replaces the form (gentle crossfade). */
+.overlay[data-tone="success"]::before {
+  background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.overlay[data-tone="success"].overlayIn {
+  animation-duration: 600ms;
+}
+.overlay[data-tone="success"].overlayIn .overlayCard {
+  animation-duration: 620ms;
+}
+
+/* Error: keep the form visible but blur it harder; stronger frost. */
+.overlay[data-tone="error"]::before {
+  background: color-mix(in srgb, var(--color-surface) 52%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.05);
+  backdrop-filter: blur(20px) saturate(1.05);
+}
 .overlayIn {
   animation: overlayIn 340ms ease forwards;
 }

@@ -27,7 +27,7 @@ export interface SubscriptionFormProps {
 
 const GENERIC_ERROR = brand.errorBody;
 // How long the error overlay is held before it fades out and restores the form.
-const ERROR_HOLD_MS = 4200;
+const ERROR_HOLD_MS = 3000;
 
 export default function SubscriptionForm({
   brandName,

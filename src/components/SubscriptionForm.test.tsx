@@ -132,7 +132,7 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
       expect(screen.getByText(/something went wrong/i)).toBeTruthy();
 
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(4800); // past the ~4.2s error hold
+        await vi.advanceTimersByTimeAsync(3600); // past the ~3s error hold + fade
       });
 
       // Overlay gone; entered data preserved so the user can retry.

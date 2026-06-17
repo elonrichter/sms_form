@@ -162,6 +162,10 @@ typecheck + lint + tests + build + token-leak check on every push/PR.
 
 ## 11. Change log
 
+- **2026-06-17** — Header shows the brand name as a purple text wordmark (from the
+  `brandName` runtime prop) instead of the logo image. Country `<select>` shows
+  short abbreviations (`🇺🇸 US (+1)`, `🇬🇧 UK (+44)`; `abbr` field, "UK" for GB) in
+  a more compact column (30%). Submit button label is now "Subscribe".
 - **2026-06-17** — Distinct result transitions: **success** uses a slow (~600ms)
   near-opaque crossfade (form dissolves out as the check/text dissolve in, then
   terminal); **error** blurs the form harder, holds ~4.2s, then un-blurs back to

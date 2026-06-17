@@ -38,4 +38,10 @@ describe("countries", () => {
     expect(getCountry("CA")?.flag).toBe("🇨🇦");
     expect(COUNTRIES.every((c) => c.flag.length > 0)).toBe(true);
   });
+
+  it("uses short display abbreviations (UK for GB)", () => {
+    expect(getCountry("US")?.abbr).toBe("US");
+    expect(getCountry("GB")?.abbr).toBe("UK");
+    expect(COUNTRIES.every((c) => c.abbr.length > 0)).toBe(true);
+  });
 });

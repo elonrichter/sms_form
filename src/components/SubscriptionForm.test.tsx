@@ -25,7 +25,7 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
 
   it("disables submit until the form is valid", () => {
     render(<SubscriptionForm {...props} />);
-    const submit = screen.getByRole("button", { name: /sign me up/i }) as HTMLButtonElement;
+    const submit = screen.getByRole("button", { name: /subscribe/i }) as HTMLButtonElement;
     expect(submit.disabled).toBe(true);
   });
 
@@ -61,7 +61,7 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
     fireEvent.click(boxes[0]);
     fireEvent.click(boxes[1]);
 
-    const submit = screen.getByRole("button", { name: /sign me up/i }) as HTMLButtonElement;
+    const submit = screen.getByRole("button", { name: /subscribe/i }) as HTMLButtonElement;
     expect(submit.disabled).toBe(false);
 
     await user.click(submit);
@@ -91,7 +91,7 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
     const boxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
     fireEvent.click(boxes[0]);
     fireEvent.click(boxes[1]);
-    await user.click(screen.getByRole("button", { name: /sign me up/i }));
+    await user.click(screen.getByRole("button", { name: /subscribe/i }));
     expect(await screen.findByText(/something went wrong/i)).toBeTruthy();
   });
 
@@ -110,7 +110,7 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
     fireEvent.click(boxes[0]);
     fireEvent.click(boxes[1]);
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /sign me up/i }));
+      fireEvent.click(screen.getByRole("button", { name: /subscribe/i }));
     });
     await act(async () => {}); // drain the fetch promise chain -> result state
   }

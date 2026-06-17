@@ -223,7 +223,7 @@ export default function SubscriptionForm({
         noValidate
         inert={isResult}
       >
-        <Header />
+        <Header brandName={brandName} />
 
       {/* Polite region announces the in-flight state only; errors are announced
           once by the role="alert" panel below (avoids a double announcement). */}
@@ -280,7 +280,7 @@ export default function SubscriptionForm({
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code} disabled={!c.enabled}>
-                {c.flag} {c.name} ({c.dialCode}){c.enabled ? "" : " — soon"}
+                {c.flag} {c.abbr} ({c.dialCode}){c.enabled ? "" : " — soon"}
               </option>
             ))}
           </select>
@@ -367,7 +367,7 @@ export default function SubscriptionForm({
             Submitting…
           </span>
         ) : (
-          "Sign me up"
+          "Subscribe"
         )}
         </button>
       </form>
@@ -387,11 +387,10 @@ export default function SubscriptionForm({
 
 // ---------------------------------------------------------------------------
 
-function Header() {
+function Header({ brandName }: { brandName: string }) {
   return (
     <div className={styles.header}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className={styles.logo} src={brand.logoSrc} alt={brand.logoAlt} />
+      <span className={styles.wordmark}>{brandName}</span>
       <h1 className={styles.headline}>{brand.headline}</h1>
       <p className={styles.subhead}>{brand.subhead}</p>
     </div>

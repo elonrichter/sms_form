@@ -23,11 +23,14 @@
   margin-bottom: var(--space-xs);
 }
 
-.logo {
-  height: 36px;
-  width: auto;
+.wordmark {
   align-self: flex-start;
   margin-bottom: var(--space-sm);
+  font-family: var(--font-heading-stack);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
 }
 
 .headline {
@@ -64,7 +67,7 @@
   align-items: flex-start;
 }
 .phoneRow > :first-child {
-  flex: 0 0 36%;
+  flex: 0 0 30%;
   min-width: 0;
 }
 .phoneRow > :last-child {

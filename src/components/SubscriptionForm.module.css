@@ -1,3 +1,9 @@
+/* Positioning context so the result overlay can blur-cover the card in place. */
+.shell {
+  position: relative;
+  width: 100%;
+}
+
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -200,45 +206,136 @@ select.input {
   }
 }
 
-.successPanel,
-.errorPanel {
+/* ---- Result overlay: blur fade-in, hold, fade-out (success + error) ------- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
 }
-.successPanel {
-  border-left: 3px solid var(--color-success);
-  padding-left: var(--space-md);
+.overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--color-surface) 68%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  backdrop-filter: blur(14px) saturate(1.05);
 }
-.errorPanel {
-  border: 1px solid color-mix(in srgb, var(--color-error) 50%, var(--color-border));
-  background: color-mix(in srgb, var(--color-error) 10%, transparent);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
+.overlayIn {
+  animation: overlayIn 340ms ease forwards;
 }
-.errorPanel strong {
-  color: var(--color-error);
+.overlayOut {
+  animation: overlayOut 320ms ease forwards;
+}
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes overlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
-.tryAgain {
-  align-self: flex-start;
-  margin-top: var(--space-xs);
-  height: 40px;
-  padding: 0 var(--space-lg);
-  background: transparent;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  font-size: var(--font-small);
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 120ms ease;
+.overlayCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-sm);
+  max-width: 340px;
 }
-.tryAgain:hover {
-  border-color: var(--color-primary);
+.overlayIn .overlayCard {
+  animation: overlayCardIn 460ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.overlayOut .overlayCard {
+  animation: overlayCardOut 280ms ease both;
+}
+@keyframes overlayCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes overlayCardOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.iconBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-xs);
+  border-radius: var(--radius-pill);
+  color: #fff;
+  animation: badgePop 520ms cubic-bezier(0.2, 0.8, 0.2, 1.2) both;
+}
+.iconBadge svg {
+  width: 32px;
+  height: 32px;
+}
+.iconBadge[data-tone="success"] {
+  background: var(--color-success);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-success) 45%, transparent);
+}
+.iconBadge[data-tone="error"] {
+  background: var(--color-error);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-error) 40%, transparent);
+}
+@keyframes badgePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.overlayTitle {
+  margin: 0;
+  font-family: var(--font-heading-stack);
+  font-size: var(--font-h1);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+.overlayBody {
+  margin: 0;
+  font-size: var(--font-h2);
+  line-height: 1.45;
+  color: var(--color-text-muted);
 }
 
 /* Honeypot — removed from layout, a11y tree, and tab order. */

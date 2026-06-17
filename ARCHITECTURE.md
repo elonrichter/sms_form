@@ -88,7 +88,9 @@ Route Handler (app/api/subscribe/route.ts, server)
 Aggregator (external) — derives brand_id from token, captures IP + occurred_at
   ▲  { success, status, duplicate? }
   │  normalize -> { success, message?, status?, duplicate? }   (no raw codes)
-Browser renders: success / duplicate / error(+Try again) / in-flight
+Browser renders an animated result overlay (blur fade-in, hold ~3s, fade-out,
+then reset to an empty form) for success / duplicate / error; in-flight disables
+submit + shows a spinner.
 ```
 
 ### Key invariants (do not break)
@@ -160,6 +162,12 @@ typecheck + lint + tests + build + token-leak check on every push/PR.
 
 ## 11. Change log
 
+- **2026-06-17** — Result UX: success/duplicate/error now render as an animated
+  **overlay** that blur-fades in over the (inert) form, holds ~3s, fades out, then
+  resets the form to empty. Replaces the inline error panel + the prior
+  "Try again preserves input" behavior (intentional product change; the manual
+  retry is now click/auto-dismiss). New component tests cover the error overlay
+  and the auto-reset (79 tests total).
 - **2026-06-17** — Design reskin (theme.ts only, per the reskin contract): light/airy
   palette, soft rounded sans-serif headings + system-sans body, wider card
   (440→540px) and tightened vertical rhythm. Fixed an invalid `var(--font-*)` with

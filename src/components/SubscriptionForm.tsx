@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useId, useRef } from "react";
+import { useMemo, useState, useId, useRef, useEffect, useCallback } from "react";
 import { brand } from "@/config/brand.config";
 import { COUNTRIES } from "@/lib/countries";
 import { normalizePhone, nationalDigitCount } from "@/lib/phone";
@@ -60,12 +60,15 @@ export default function SubscriptionForm({
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [serverError, setServerError] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string>("");
+  // Result overlay phase: blur fade-in -> hold -> fade-out -> reset.
+  const [overlayPhase, setOverlayPhase] = useState<"in" | "out">("in");
 
   // Honeypot — must stay empty for a human (SPEC 01 §6).
   const hpRef = useRef<HTMLInputElement>(null);
   // Synchronous re-entrancy guard: blocks a double-submit burst before React
   // re-renders and disables the button (state-derived `submitting` lags).
   const inFlight = useRef(false);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const consentSegments = useMemo(
     () => buildConsentDisclosure({ brandName, termsUrl, privacyUrl }),
@@ -98,6 +101,47 @@ export default function SubscriptionForm({
   function showError(key: keyof typeof validation.errors): string | undefined {
     return touched[key] ? validation.errors[key] : undefined;
   }
+
+  const isResult =
+    submitState === "success" ||
+    submitState === "duplicate" ||
+    submitState === "error";
+
+  const clearTimers = useCallback(() => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  }, []);
+
+  const resetForm = useCallback(() => {
+    clearTimers();
+    setValues({
+      firstName: "",
+      lastName: "",
+      country: initialCountry,
+      phone: "",
+      consentTerms: false,
+      consentMarketing: false,
+    });
+    setTouched({});
+    setServerError(null);
+    setCaptchaToken("");
+    setSubmitState("idle");
+  }, [clearTimers, initialCountry]);
+
+  // Fade the overlay out, then swap back to a fresh, empty form.
+  const beginExit = useCallback(() => {
+    clearTimers();
+    setOverlayPhase("out");
+    timers.current.push(setTimeout(resetForm, 360));
+  }, [clearTimers, resetForm]);
+
+  // Result lifecycle: appear (blur fade-in), hold ~3s, fade-out, reset.
+  useEffect(() => {
+    if (!isResult) return;
+    setOverlayPhase("in");
+    timers.current.push(setTimeout(beginExit, 2600));
+    return clearTimers;
+  }, [isResult, beginExit, clearTimers]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -162,44 +206,34 @@ export default function SubscriptionForm({
     }
   }
 
-  function handleTryAgain() {
-    // Restore the filled form (input preserved) and clear the error.
-    setServerError(null);
-    setSubmitState("idle");
-  }
-
-  // ---- Result states (replace the form area in place) -----------------------
-  if (submitState === "success" || submitState === "duplicate") {
-    const isDup = submitState === "duplicate";
-    return (
-      <ResultPanel
-        statusId={ids.status}
-        tone="success"
-        title={isDup ? brand.duplicateTitle : brand.successTitle}
-        body={isDup ? brand.duplicateBody : brand.successBody}
-      />
-    );
-  }
+  const overlayTitle =
+    submitState === "error"
+      ? brand.errorTitle
+      : submitState === "duplicate"
+        ? brand.duplicateTitle
+        : brand.successTitle;
+  const overlayBody =
+    submitState === "error"
+      ? (serverError ?? brand.errorBody)
+      : submitState === "duplicate"
+        ? brand.duplicateBody
+        : brand.successBody;
 
   return (
-    <form className={styles.card} onSubmit={handleSubmit} noValidate>
-      <Header />
+    <div className={styles.shell}>
+      <form
+        className={styles.card}
+        onSubmit={handleSubmit}
+        noValidate
+        inert={isResult}
+      >
+        <Header />
 
       {/* Polite region announces the in-flight state only; errors are announced
           once by the role="alert" panel below (avoids a double announcement). */}
       <p id={ids.status} className={styles.srOnly} aria-live="polite" role="status">
         {submitting ? "Submitting your sign-up…" : ""}
       </p>
-
-      {submitState === "error" && serverError ? (
-        <div className={styles.errorPanel} role="alert">
-          <strong>{brand.errorTitle}</strong>
-          <span>{serverError}</span>
-          <button type="button" className={styles.tryAgain} onClick={handleTryAgain}>
-            {brand.tryAgainLabel}
-          </button>
-        </div>
-      ) : null}
 
       <div className={styles.row}>
         <Field
@@ -339,8 +373,19 @@ export default function SubscriptionForm({
         ) : (
           "Sign me up"
         )}
-      </button>
-    </form>
+        </button>
+      </form>
+
+      {isResult ? (
+        <ResultOverlay
+          phase={overlayPhase}
+          tone={submitState === "error" ? "error" : "success"}
+          title={overlayTitle}
+          body={overlayBody}
+          onDismiss={beginExit}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -457,28 +502,56 @@ function renderSegments(
   });
 }
 
-function ResultPanel({
-  statusId,
+function ResultOverlay({
+  phase,
   tone,
   title,
   body,
+  onDismiss,
 }: {
-  statusId: string;
+  phase: "in" | "out";
   tone: "success" | "error";
   title: string;
   body: string;
+  onDismiss: () => void;
 }) {
   return (
-    <div className={styles.card}>
-      <div
-        id={statusId}
-        className={tone === "success" ? styles.successPanel : styles.errorPanel}
-        role="status"
-        aria-live="polite"
-      >
-        <h1 className={styles.headline}>{title}</h1>
-        <p className={styles.subhead}>{body}</p>
+    <div
+      className={`${styles.overlay} ${phase === "out" ? styles.overlayOut : styles.overlayIn}`}
+      role={tone === "error" ? "alert" : "status"}
+      aria-live={tone === "error" ? "assertive" : "polite"}
+      onClick={onDismiss}
+    >
+      <div className={styles.overlayCard}>
+        <span className={styles.iconBadge} data-tone={tone}>
+          {tone === "error" ? <AlertIcon /> : <CheckIcon />}
+        </span>
+        <h2 className={styles.overlayTitle}>{title}</h2>
+        <p className={styles.overlayBody}>{body}</p>
       </div>
     </div>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M5 13l4 4L19 7"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 7.5v5.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="12" cy="16.6" r="1.4" fill="currentColor" />
+    </svg>
   );
 }

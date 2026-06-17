@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SubscriptionForm from "./SubscriptionForm";
 import { consentSnapshot } from "@/lib/disclosure";
@@ -71,5 +71,78 @@ describe("SubscriptionForm — compliance & state (SPEC 01/02)", () => {
     const sent = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
     expect(sent.phone_e164).toBe("+14158675309");
     expect(sent.consent_text_snapshot).toBe(consentSnapshot(props));
+  });
+
+  it("shows an error overlay when the server rejects the submission", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ success: false, message: "Nope" }), {
+          status: 422,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
+    render(<SubscriptionForm {...props} />);
+    await user.type(screen.getByLabelText("First name"), "Jane");
+    await user.type(screen.getByLabelText("Last name"), "Doe");
+    await user.type(screen.getByLabelText("Phone number"), "4158675309");
+    const boxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
+    fireEvent.click(boxes[0]);
+    fireEvent.click(boxes[1]);
+    await user.click(screen.getByRole("button", { name: /sign me up/i }));
+    expect(await screen.findByText(/something went wrong/i)).toBeTruthy();
+  });
+
+  it("auto-resets to an empty form after the result overlay times out", async () => {
+    // fireEvent (synchronous) + explicit act flushes avoid the fragile
+    // userEvent <-> fake-timers interplay while still driving the real flow.
+    vi.useFakeTimers();
+    try {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
+      );
+      render(<SubscriptionForm {...props} />);
+      fireEvent.change(screen.getByLabelText("First name"), {
+        target: { value: "Jane" },
+      });
+      fireEvent.change(screen.getByLabelText("Last name"), {
+        target: { value: "Doe" },
+      });
+      fireEvent.change(screen.getByLabelText("Phone number"), {
+        target: { value: "4158675309" },
+      });
+      const boxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
+      fireEvent.click(boxes[0]);
+      fireEvent.click(boxes[1]);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: /sign me up/i }));
+      });
+      await act(async () => {}); // drain the fetch promise chain -> success state
+      expect(screen.getByText(/you're in/i)).toBeTruthy();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3200);
+      });
+
+      expect(screen.queryByText(/you're in/i)).toBeNull();
+      expect(
+        (screen.getByLabelText("First name") as HTMLInputElement).value,
+      ).toBe("");
+      expect(
+        (screen.getByRole("button", { name: /sign me up/i }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

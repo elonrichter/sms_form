@@ -160,6 +160,12 @@ typecheck + lint + tests + build + token-leak check on every push/PR.
 
 ## 11. Change log
 
+- **2026-06-17** — Design reskin (theme.ts only, per the reskin contract): light/airy
+  palette, soft rounded sans-serif headings + system-sans body, wider card
+  (440→540px) and tightened vertical rhythm. Fixed an invalid `var(--font-*)` with
+  no fallback in the font stacks. Country dropdown + phone moved onto one row
+  (`.phoneRow`) to save vertical space (DOM order preserved); page `color-scheme`
+  set to light.
 - **2026-06-17** — Initial architecture: stateless Next.js form, server route with
   token isolation, compliance-locked disclosure, reskin layer, OpenAPI/Swagger,
   full test suite, CI + pre-commit. 12 review findings remediated (fail-closed

@@ -239,42 +239,45 @@ export default function SubscriptionForm({
         </Field>
       </div>
 
-      <Field id={ids.country} label="Country">
-        <select
-          id={ids.country}
-          className={styles.input}
-          value={values.country}
-          onChange={(e) => update("country", e.target.value)}
-        >
-          {COUNTRIES.map((c) => (
-            <option key={c.code} value={c.code} disabled={!c.enabled}>
-              {c.name} ({c.dialCode}){c.enabled ? "" : " — coming soon"}
-            </option>
-          ))}
-        </select>
-      </Field>
+      {/* Country + phone share one row to save vertical space (DOM order preserved). */}
+      <div className={styles.phoneRow}>
+        <Field id={ids.country} label="Country">
+          <select
+            id={ids.country}
+            className={styles.input}
+            value={values.country}
+            onChange={(e) => update("country", e.target.value)}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code} disabled={!c.enabled}>
+                {c.name} ({c.dialCode}){c.enabled ? "" : " — coming soon"}
+              </option>
+            ))}
+          </select>
+        </Field>
 
-      <Field
-        id={ids.phone}
-        label="Phone number"
-        error={showError("phone")}
-        hint={`${phoneCount}/10 digits`}
-      >
-        <input
+        <Field
           id={ids.phone}
-          className={styles.input}
-          type="tel"
-          inputMode="numeric"
-          autoComplete="tel-national"
-          placeholder="(415) 867-5309"
-          value={values.phone}
-          onChange={(e) => update("phone", e.target.value)}
-          onBlur={() => markTouched("phone")}
-          aria-invalid={!!showError("phone")}
-          aria-describedby={showError("phone") ? `${ids.phone}-err` : `${ids.phone}-hint`}
-          required
-        />
-      </Field>
+          label="Phone number"
+          error={showError("phone")}
+          hint={`${phoneCount}/10 digits`}
+        >
+          <input
+            id={ids.phone}
+            className={styles.input}
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            placeholder="(415) 867-5309"
+            value={values.phone}
+            onChange={(e) => update("phone", e.target.value)}
+            onBlur={() => markTouched("phone")}
+            aria-invalid={!!showError("phone")}
+            aria-describedby={showError("phone") ? `${ids.phone}-err` : `${ids.phone}-hint`}
+            required
+          />
+        </Field>
+      </div>
 
       {/* Checkbox A — Terms & Privacy */}
       <ConsentCheckbox

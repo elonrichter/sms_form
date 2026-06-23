@@ -23,14 +23,12 @@
   margin-bottom: var(--space-xs);
 }
 
-.wordmark {
+.logo {
   align-self: flex-start;
   margin-bottom: var(--space-sm);
-  font-family: var(--font-heading-stack);
-  font-weight: 700;
-  font-size: 1.125rem;
-  letter-spacing: -0.01em;
-  color: var(--color-primary);
+  width: auto;
+  height: 60px;
+  object-fit: contain;
 }
 
 .headline {

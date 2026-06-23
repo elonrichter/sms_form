@@ -13,10 +13,10 @@
 export type LayoutVariant = "centered-card" | "split-hero" | "full-bleed";
 
 export const brand = {
-  name: "Richmond Balance", // fallback for BRAND_NAME; also drives the disclosure
-  slug: "richmondbalance", // fallback for BRAND_SLUG (token is authoritative)
-  logoSrc: "/brand/logo.svg",
-  logoAlt: "Richmond Balance",
+  name: "Cash Flow Currents", // fallback for BRAND_NAME; also drives the disclosure
+  slug: "cashflowcurrents", // fallback for BRAND_SLUG (token is authoritative)
+  logoSrc: "/logo.png",
+  logoAlt: "Cash Flow Currents",
   headline: "Get exclusive offers by text",
   subhead: "Join the list. No spam — just the good stuff.",
   successTitle: "You're in 🎉",

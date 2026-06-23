@@ -390,7 +390,14 @@ export default function SubscriptionForm({
 function Header({ brandName }: { brandName: string }) {
   return (
     <div className={styles.header}>
-      <span className={styles.wordmark}>{brandName}</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        className={styles.logo}
+        src={brand.logoSrc}
+        alt={brand.logoAlt || brandName}
+        width={160}
+        height={84}
+      />
       <h1 className={styles.headline}>{brand.headline}</h1>
       <p className={styles.subhead}>{brand.subhead}</p>
     </div>

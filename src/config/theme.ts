@@ -14,22 +14,22 @@
 
 export const theme = {
   color: {
-    bg: "#F6F7FB", // app background — soft off-white
+    bg: "#FFFBF2", // app background — warm white with a soft yellow tint
     surface: "#FFFFFF", // card
-    text: "#16161D",
-    textMuted: "#5E5E6B",
-    primary: "#6C5CE7", // gentle indigo; white text on it ~4.86:1
+    text: "#1F1A15",
+    textMuted: "#6B5F50",
+    primary: "#D9743C", // Cash Flow Currents orange (matches the logo bubble)
     primaryText: "#FFFFFF",
-    border: "#E7E7F0",
+    border: "#F0E4D2",
     error: "#D92D20",
     success: "#0F9D7A",
     // Legal copy must remain >= 4.5:1 against `surface` (#FFFFFF).
-    // #3F3F49 on white ~= 9:1 — safe.
-    legalText: "#3F3F49",
+    // #3F3A33 on white ~= 9:1 — safe.
+    legalText: "#3F3A33",
     // Disclosure (Terms/Privacy) link color, >= 4.5:1 on white.
-    // #574FCF on white ~= 6:1. The base `primary` is borderline on white, so
-    // links use this dedicated token, not `primary`.
-    legalLink: "#574FCF",
+    // #9A4A14 (deep amber) on white ~= 5.6:1. The base `primary` is too light
+    // on white for links, so links use this dedicated darker token.
+    legalLink: "#9A4A14",
   },
   font: {
     // Soft rounded sans for headings; clean system sans for body. No leading

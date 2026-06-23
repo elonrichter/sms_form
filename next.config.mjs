@@ -13,7 +13,16 @@ const nextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          // NOTE: X-Frame-Options is intentionally omitted. It only supports
+          // DENY / SAMEORIGIN and cannot allow a specific cross-origin parent
+          // (the form runs on a subdomain, the embed lives on the apex domain).
+          // Framing is controlled by the CSP `frame-ancestors` directive below,
+          // which modern browsers honor over X-Frame-Options.
+          {
+            key: "Content-Security-Policy",
+            value:
+              "frame-ancestors 'self' https://cashflowcurrents.com https://*.cashflowcurrents.com;",
+          },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
